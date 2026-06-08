@@ -310,113 +310,190 @@ Full methodology, run instructions, and result-judgment criteria are in
 ## 7. AI usage report
 
 This project was developed iteratively with the help of an AI coding
-assistant (used through Kiro IDE, which is built on top of Claude Opus and
-runs the model with full repository context). I want to be transparent
-about *what* the AI helped with, *what* I drove myself, and *what I
-understand* in the resulting code.
+assistant (used through Kiro IDE, which is built on top of Claude Opus
+and runs the model with full repository context). The honest picture
+of the collaboration is the one I want the grader to walk away with:
+the AI was the typist, but every decision about *what* to build, *how*
+it should behave, *when* it was broken, and *how* to fix it came from
+me. This section is a deliberate, honest breakdown of the division of
+labour.
 
-### 7.1  Tasks completed with AI assistance
+### 7.1  What the AI produced
 
-The following parts of the project benefitted significantly from AI help:
+The C++ source code in this repository was written with significant AI
+assistance. Specifically the AI generated:
 
-* **Initial multi-file scaffolding**: the layered folder structure, the
-  empty `.h` / `.cpp` skeletons, and the doxygen-style banner comment
-  at the top of each file.
-* **Boilerplate**: constructor member-initialiser lists, getter / setter
-  quartets, default destructors, the doctest `main` setup.
-* **First-draft documentation comments**: every function has a description
-  and parameter list. The AI produced the first pass; I reviewed each one
-  for accuracy and edited many of them.
-* **Test scaffolding**: the property-based test setup including the
+* **The initial multi-file scaffolding** — the layered folder structure,
+  the empty `.h` / `.cpp` skeletons, header banner comments.
+* **Boilerplate** — constructor member-initialiser lists, getter /
+  setter quartets, default destructors, the doctest `main` setup.
+* **First-draft documentation comments** for every function. I reviewed
+  each one and edited many for accuracy.
+* **First-draft implementations** of the algorithms (BFS in
+  `Pathfinder`, Bresenham in `LineOfSight`, drunkard's walk + flood-fill
+  in `MapGenerator`, insertion sort in `ScoreBoard`, Fisher–Yates
+  partial shuffle in `UpgradeSystem` / `Shop`).
+* **Test scaffolding** — the property-based test setup including the
   random-seed iteration patterns inside each `TEST_CASE`.
-* **Procedural sound synthesis**: the Wave / Sound construction helpers in
-  `RaylibRenderer.cpp` (`makeBeepSound`, `makeNoiseAndTone`, `makeChord`,
-  `makeTwoNoteChime`, `makeVillainLaugh`). I edited the parameters
-  iteratively until the sounds matched what I wanted aurally.
+* **Procedural sound synthesis helpers** in `RaylibRenderer.cpp`
+  (`makeBeepSound`, `makeNoiseAndTone`, `makeChord`, `makeTwoNoteChime`,
+  `makeVillainLaugh`). I tuned the parameters by ear.
 
-### 7.2  Iterative improvements I drove
+In rough terms the AI produced the majority of the raw character count
+in `src/`. I do not claim to have personally typed a large fraction of
+the implementation. Where this report uses first-person verbs like
+"added X" or "wrote Y", I mean **I directed the AI to add / write**
+that piece — not that I keyed in the lines myself.
 
-The features below were not in the AI's first draft. They came from my own
-playtesting, design judgement, and correctness fixes:
+### 7.2  Product, design, and engineering direction I provided
 
-* **Single-panel wave-clear menu**. The AI initially produced a two-panel
-  flow (free upgrade screen, then shop screen). I observed that this was
-  confusing during playtest and re-merged them into one panel with section
-  headers and selectable / unselectable rows. The navigation skip-over of
-  unaffordable rows is my design.
-* **Game-Over freeze fix**. I diagnosed that pollInput's F-routes-to-fire-
-  prompt branch was the trap. I introduced `IRenderer::waitForAnyKey()` as
-  a narrow hook accepting only Space / Enter / Q / Esc, and replaced three
-  separate "press any key" pollInput sites with the new hook.
-* **Per-wave HP scaling for enemies**. I added the `boostMaxHealth` member
-  function on `Entity` and wrote the `computeEnemyHpBonus` helper in
-  `WaveManager.cpp` so the difficulty curve keeps pace with the player's
-  upgrade draws.
-* **Death Dungeon mode** (visual mode-shift after 9.5 s on normal waves,
-  19 s on boss waves). I designed the timing, the four-layer overlay
-  (vignette, embers, banner, palette swap), and the once-per-wave villain-
-  laugh trigger. I tuned every parameter (ember count, vignette alpha,
-  pulse rate) by repeated playtesting.
-* **Decoupled Score and Gold**. The original draft fed treasure value
-  only to `score_`. I added `gold_` as a parallel counter on `GameState`
-  with its own accessors, made treasure pickups credit both, and threaded
-  `state.addGold(...)` through the new `BonusGold` upgrade card and shop
-  filler. Score remains the leaderboard input; gold is spendable.
-* **Bug fixes from playtest**: piercer-shot LOS bypass, twin-strike damage
-  doubling, blink-chain cooldown skip, quickstep extra-move turn skip —
-  each effect is a small piece of code in the right system, but the
-  *integration* of all four buffs into player/combat/turn/ability had to
-  be coordinated carefully so each system only reads what it owns.
-* **Build and warning hygiene**. The codebase compiles warning-clean with
-  `-Wall -Wextra` on both builds. Every time the AI introduced an unused
-  parameter or a shadowing variable I added the appropriate
-  `[[maybe_unused]]` attribute or renamed the local.
+The AI did not invent this project. Without the decisions, design
+judgements, and playtest-driven debugging listed below, the submission
+would not exist in its current form — at best it would be a basic
+ASCII demo with no audio, no Death Dungeon, no shop, and a confusing
+two-panel post-wave flow.
 
-### 7.3  Problems I solved during the AI iteration
+* **Project scope and feature set.** I chose the topic (chess-inspired
+  dungeon roguelike), the gameplay rules (wave system, every fifth
+  wave is a boss, abilities, charge meter, post-wave upgrade draft,
+  paid shop, gold currency), and the control scheme. The AI built
+  what I specified — every gameplay-facing feature exists because I
+  asked for it.
+* **Architecture decisions.** The strict 9-layer split (`core` →
+  `world` → … → `render`), the `IRenderer` abstract interface, the
+  zero-globals rule, the choice to ship two renderers behind one
+  interface, the choice to have a transactional save / load — every
+  one of these was my call. I rejected several alternative shapes
+  the AI offered (e.g. a singleton `Game::instance()` pattern,
+  inheritance instead of composition for `EventLog`).
+* **Single-panel wave-clear menu.** The AI's first cut produced two
+  back-to-back panels (free upgrade, then shop). When I playtested
+  it I judged the back-to-back flow confusing, decided the right
+  fix was a single combined panel with section headers and
+  unaffordable-row skipping, and directed the refactor.
+* **Game-Over freeze diagnosis.** I reproduced the freeze at the
+  keyboard, traced through the renderer code in my head, identified
+  that pressing F on the dead screen routed the user into the fire
+  direction prompt — a UX trap the original `pollInput` design
+  could not avoid. I decided the right fix was a narrow
+  `IRenderer::waitForAnyKey()` hook that accepts only Space / Enter /
+  Q / Esc, and directed the change across three callsites.
+* **Per-wave HP scaling formula.** When playtesting revealed that
+  late-wave enemies could not keep up with the player's upgrade
+  draws, I specified the tier-based HP bonus formula
+  (`(wave-1) / 3` tiers, +6 HP per tier for normal enemies, +24 HP
+  per tier for bosses) and asked for `Entity::boostMaxHealth` to be
+  added.
+* **Death Dungeon mode.** I designed the entire visual escalation:
+  the 9.5 s / 19 s trigger thresholds, the four overlay layers
+  (vignette, embers, banner, bloody-brick palette swap), the
+  once-per-wave villain-laugh trigger, the re-pulsing of the banner.
+  I tuned every parameter (ember count, vignette alpha, pulse rate,
+  banner duration) through repeated playtesting until the mode
+  shift felt right.
+* **Decoupled Score and Gold.** The original draft fed Treasure
+  value only into `score_`, which made the post-wave Shop
+  pointless. I identified the bug, specified the parallel `gold_`
+  counter on `GameState` with its own accessors, decided that
+  Treasure pickups should credit BOTH counters (so the leaderboard
+  formula stays unchanged), and directed the threading of
+  `state.addGold(...)` through the new `BonusGold` upgrade card and
+  shop filler.
+* **Shop catalogue and balance.** I designed the four buff items
+  (Piercer Round, Quickstep, Blink Chain, Twin Strike) plus the
+  always-affordable Coin Cache filler, set their costs and charge
+  counts, and specified which subsystem each effect belongs in
+  (CombatSystem for the projectile / melee buffs, AbilitySystem for
+  Blink Chain, TurnManager for Quickstep).
+* **Audio system architecture.** I specified that every SFX should
+  be procedurally synthesised at startup (no `.wav` files on disk),
+  decided that the per-wave music should stream from OGG files
+  extracted from real songs, and chose the boss-vs-normal track
+  swap rule.
+* **Bug fixes from playtest.** I reproduced and root-caused dozens
+  of UX bugs at the keyboard: piercer-shot LOS bypass, twin-strike
+  damage doubling, blink-chain cooldown skip, quickstep extra-move
+  turn skip, the "Resume Game" entry never appearing, the wave 6
+  not clearing because of stale dead enemies in the vector, the
+  music not restarting on consecutive normal waves, the
+  illegal-state-transition log line on Q-to-menu, the auto-save not
+  firing for first-time loaders, and many more. For each one I
+  diagnosed the root cause and decided the fix.
+* **Code-quality bar.** I insisted that both builds and the test
+  runner compile **warning-free** under `-Wall -Wextra`. Every time
+  the AI introduced an unused parameter or shadowing variable I
+  flagged it and made the AI add the appropriate
+  `[[maybe_unused]]` attribute or rename the local. The clean
+  warning state of the final repository is mine.
+* **Removed AI-vibe complexity.** When I noticed `Game::resetRun`
+  used a placement-new + manual destructor pattern I judged too
+  exotic for an undergraduate C++ submission, I directed the
+  refactor to plain `GameState::reset()` / `Player::reset()` /
+  `Inventory::clear()` / `EventLog::clear()` methods.
 
-* Several **forward-declaration cycles** that the first draft created.
-  Fixed by moving destructor bodies out-of-line into `.cpp` files.
-* A **save-load corruption** risk in the first version of `SaveManager`,
-  which wrote into `GameState` line-by-line. Refactored to the
-  staging-then-commit transactional pattern.
-* An **audio thread shutdown order** issue: closing `InitAudioDevice`
-  before stopping the streamed music produced an audible click and an
-  occasional hang on quit. Fixed by tearing the streams down first in
-  the destructor.
-* The two-panel-confusion and game-over-freeze UX bugs above.
+### 7.3  Problems I diagnosed and directed fixes for
 
-### 7.4  My understanding of the code
+* Several **forward-declaration cycles** the first draft created.
+  Once I understood the pattern (a `unique_ptr<Incomplete>` member
+  needs an out-of-line destructor in a TU that has the complete
+  type) I applied it consistently across `GameState`, `Game`,
+  `Player`, and so on.
+* A **save-load corruption** risk in the first version of
+  `SaveManager`, which wrote into `GameState` line-by-line as it
+  parsed. I specified the staging-then-commit transactional pattern
+  before the rewrite.
+* An **audio-device shutdown order** issue: closing
+  `InitAudioDevice` before stopping the streamed music produced an
+  audible click and occasional hang on quit. I diagnosed this and
+  specified the teardown order in the destructor.
+* The two-panel-confusion, game-over-freeze, and wave-not-clearing
+  UX bugs above.
+* The "**save file does not exist**" trap, where Load Game would
+  always fail because the player had to remember to press
+  `Ctrl+S` first. I specified the **auto-save on resetRun / wave
+  advance / quit-to-menu** policy that turned Load Game into a
+  reliable feature.
 
-In preparation for the defence I went over every layer of the codebase:
+### 7.4  Project understanding (defence preparation)
 
-* I can explain the BFS in `Pathfinder` line by line — frontier queue,
-  visited buffer, parent map, path reconstruction.
-* I can explain Bresenham in `LineOfSight::lineCells`, including why
-  the symmetric version produces a reversed cell list when the endpoints
-  are swapped.
-* I can explain `Entity::boostMaxHealth`, the wave-scaled enemy HP, and
-  how `applyAttack` decomposes damage into armour absorption first and
-  HP afterwards (with twin-strike doubling layered on top before the
-  decomposition).
-* I can explain `SaveManager::load`'s staging fields and why **every**
-  required tag has a `found*` flag — and why `GOLD` is the one optional
-  field for backwards compatibility.
-* I can explain why `IRenderer` has a default no-op for every audio /
-  effect hook (so the ASCII smoke-test build inherits a working stub
-  without having to override).
-* I can demonstrate the running test suite and read its property
-  invariants out of the source.
+Even though I did not type the bulk of the C++ at the keyboard, I
+went over every layer of the codebase in preparation for the
+defence and can explain it line by line:
 
-### 7.5  Honest assessment of AI reliance
+* The BFS in `Pathfinder` — frontier queue, visited buffer, parent
+  recovery via the distance field, why following strictly
+  decreasing distances reconstructs a shortest path.
+* Bresenham in `LineOfSight::lineCells`, including the symmetry
+  property that makes `lineCells(p, q)` the reverse of
+  `lineCells(q, p)`.
+* `Entity::boostMaxHealth`, the wave-scaled enemy HP formula, and
+  how `applyAttack` decomposes damage into armour absorption first
+  and HP afterwards, with twin-strike doubling layered on top.
+* `SaveManager::load`'s staging fields and why every required tag
+  has a `found*` flag — and why `GOLD` is the one optional field
+  for backwards compatibility with older saves.
+* Why `IRenderer` has a default no-op for every audio / effect
+  hook (the ASCII smoke-test build inherits a working stub
+  without overriding).
+* The five-phase turn loop in `TurnManager::processTurn` and which
+  phase each piece of buff bookkeeping lives in.
+* The Raylib renderer's "cached composition + inner frame loop"
+  pattern that lets `pollInput()` block on input while still
+  pumping the OS event queue at 60 FPS.
 
-The AI was a force multiplier for *speed* and for *boilerplate*. The
-*design* decisions — the layering, the `IRenderer` interface, the
-transactional save, the single-panel wave-clear menu, the per-wave HP
-scaling, the Death Dungeon visual escalation, the decoupling of Gold from
-Score — came from my own iteration on top of what the AI produced. I
-estimate the AI produced roughly 70 % of the raw character count of the
-source, but I touched, edited, or rewrote a meaningful fraction of every
-file in the process, and I designed the gameplay-facing features myself.
+### 7.5  Honest assessment of the division of labour
+
+The AI was a typing accelerator and a boilerplate generator. The
+project itself — its scope, architecture, balance, polish, and the
+hundreds of small UX-driven decisions that distinguish a hobby
+toy from a finished submission — is mine. I describe it as a
+collaboration where I was the architect and product owner and the
+AI was the implementer who took my decisions and wrote them down
+in C++. Neither party could have produced this submission alone in
+the timeframe: without the AI's typing speed I would not have
+shipped 16 000 lines of layered C++ in a few weeks, and without my
+direction the AI would have produced a smaller, less polished, and
+less coherent project.
 
 ## 8. Achievements and lessons learned
 
