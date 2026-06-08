@@ -1,0 +1,86 @@
+# =============================================================================
+# .gitignore — Dungeon Grid Arena
+# =============================================================================
+
+# ---- Archived / internal-only documents -------------------------------------
+# These were the early-stage spec drafts that the published Final Report and
+# Summary Report supersede. Kept on disk for personal reference only.
+docs/archive/
+
+# ---- Kiro IDE workspace metadata --------------------------------------------
+# Personal IDE state; not part of the code.
+.kiro/
+
+# ---- Build outputs ----------------------------------------------------------
+# The graded submission ships prebuilt binaries; the repository tracks source
+# only. Reviewers run the documented compile commands themselves.
+*.exe
+*.o
+*.obj
+*.a
+*.lib
+*.dll
+*.so
+*.dylib
+*.pdb
+*.ilk
+*.exp
+*.idb
+
+# ---- The build artefacts of THIS project (explicit, in case the patterns
+#       above are ever loosened) -------------------------------------------------
+game.exe
+game_raylib.exe
+test_runner.exe
+
+# ---- Vendored Raylib runtime DLL (the .a + headers are tracked) -------------
+# raylib.dll is a 64-bit Windows binary; the test runner does not need it
+# and reviewers can fetch it from the upstream Raylib release. Re-add this
+# file by hand when packaging the submission ZIP if needed.
+libs/raylib/lib/raylib.dll
+
+# ---- CMake build trees ------------------------------------------------------
+build/
+out/
+cmake-build-*/
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+CTestTestfile.cmake
+
+# ---- Editor / OS junk -------------------------------------------------------
+.vs/
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---- Python helpers / FFmpeg side install -----------------------------------
+# imageio-ffmpeg lives in the user's AppData, but this rule guards against a
+# venv ever being created inside the project root.
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# ---- Runtime data the player generates --------------------------------------
+# These files are written by the game itself when the player saves or dies;
+# they should never be tracked. The directory itself is preserved by the
+# .gitkeep file we DO track.
+data/savegame.txt
+data/highscores.txt
+
+# ---- Source video files no longer needed ------------------------------------
+# The OGG audio tracks under assets/ are extracted from these MP4 sources
+# once and committed; the source MP4s are gitignored to keep the repo small.
+*.mp4
+!test_cases_evidence/GameDemonstrationVideo.mp4
+
+# Logs / scratch
+*.log
+scratch/
