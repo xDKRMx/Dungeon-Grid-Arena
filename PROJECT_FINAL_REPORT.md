@@ -21,9 +21,12 @@
 ## 1.1  Title and one-line description
 
 **Dungeon Grid Arena** — a turn-based, chess-inspired dungeon roguelike
-written in C++17 with two interchangeable renderers (a portable ASCII
-console renderer and an optional Raylib graphical renderer) behind a
-single abstract `IRenderer` interface.
+written in C++17. The canonical experience is the Raylib graphical
+build (full HUD, procedural SFX, streaming OGG music, Death Dungeon
+visual mode). A minimal ASCII console build sits behind the same
+`IRenderer` interface as proof that the renderer abstraction is
+loosely coupled; every screenshot, demo video, and gameplay
+walkthrough in the submission targets the Raylib build.
 
 ## 1.2  Motivation and topic justification
 
@@ -84,7 +87,7 @@ milestones:
 | May 7      | Project proposal submitted: topic, target rubric items, deliverable list.             |
 | May 8 – 15 | Requirements analysis and design specification (the documents under `docs/archive/`).  |
 | May 16 – 28 | Core layers implemented: `core`, `world`, `entities`, `combat`. Test suite stood up.   |
-| May 29 – Jun 4 | Systems layer: turn manager, abilities, waves, save / load, console renderer.       |
+| May 29 – Jun 4 | Systems layer: turn manager, abilities, waves, save / load, ASCII smoke-test renderer.       |
 | Jun 5 – 7  | Raylib renderer, audio synthesis, gameplay polish, single-panel wave-clear menu.      |
 | Jun 8      | Final submission package assembled and uploaded.                                       |
 | Jun 10     | Live demonstration session.                                                            |
@@ -179,12 +182,12 @@ disabled-row navigation skipping for unaffordable shop entries.
 ## 2.3  Non-functional requirements
 
 * **Performance**: 60 FPS on commodity Windows hardware in the Raylib
-  build. SFX synthesis at startup completes under 200 ms. The console
-  build is responsive on any 80 × 30 terminal.
+  build. SFX synthesis at startup completes under 200 ms. The
+  ASCII smoke-test build is responsive on any 80 × 30 terminal.
 * **Build cleanliness**: warning-free with `-Wall -Wextra` on all three
-  build targets (console, Raylib, test runner). A warning is a defect.
+  build targets (Raylib, ASCII smoke-test, test runner). A warning is a defect.
 * **Portability**: pure C++17; the only platform-specific code is the
-  keyboard-read fallback in `ConsoleRenderer.cpp`
+  keyboard-read fallback in the smoke-test `ConsoleRenderer.cpp`
   (`_getch` on Windows vs. `tcsetattr` on POSIX).
 * **Determinism**: a fixed seed reproduces the same map, the same item
   drops, the same enemy roll outcomes, and the same upgrade / shop
@@ -369,10 +372,14 @@ class.
 ConsoleRenderer    RaylibRenderer
 ```
 
-`ConsoleRenderer` overrides only the four core methods. Every audio /
-effect hook is inherited as a no-op so the console build does not need
-to know about Sound or AudioStream at all. `RaylibRenderer` overrides
-all of them.
+`ConsoleRenderer` overrides only the four core methods and inherits
+every audio / effect hook as a no-op. It does **not** show fire
+trails, enemy attack beams, the Nova shockwave, the player melee
+slash, the Death Dungeon overlay, or play any sound. Its purpose in
+the project is to **prove that the `IRenderer` abstraction is
+loosely coupled** — the same game core runs through it unchanged.
+`RaylibRenderer` is the canonical implementation and overrides every
+hook for the full graphical experience.
 
 ## 3.3  Data members of major classes
 
@@ -550,8 +557,9 @@ virtual void setMasterMusicVolume(float volume) {}
 virtual void waitForAnyKey() { (void)pollInput(); }
 ```
 
-The default `waitForAnyKey` falls back to `pollInput` so the console
-build inherits a working "press anything" behaviour without overriding.
+The default `waitForAnyKey` falls back to `pollInput` so the ASCII
+smoke-test build inherits a working "press anything" behaviour without
+overriding.
 
 ## 3.5  Sequence diagram — one full turn
 

@@ -19,9 +19,9 @@ clause).
 | ------------------ | ------------------------------------------------------------ |
 | Operating system   | Windows 10 / 11 (64-bit)                                     |
 | Compiler           | g++ 13.2 (MinGW-w64), `-std=c++17 -Wall -Wextra`             |
-| Display            | 1280 × 760 window (Raylib build) / any 80 × 30 terminal (console build) |
+| Display            | 1280 × 760 window (Raylib build — canonical) / any 80 × 30 terminal (ASCII smoke-test build) |
 | Audio              | Default Windows audio device, 44.1 kHz stereo                |
-| Save / score files | `data/save.dgs`, `data/highscores.txt` (created by the game) |
+| Save / score files | `data/savegame.txt`, `data/highscores.txt` (created by the game) |
 | Music tracks       | `assets/normal_theme.ogg`, `assets/boss_theme.ogg`           |
 | Test framework     | doctest 2.4.11 (vendored, for the property-based suite)      |
 

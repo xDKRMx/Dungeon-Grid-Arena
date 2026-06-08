@@ -1,8 +1,12 @@
 # Dungeon Grid Arena
 
-A turn-based, grid-based dungeon roguelike written in C++17. The codebase
-ships with **two interchangeable renderers** — a portable ASCII console
-renderer and a Raylib graphical renderer — sharing a single game core.
+A turn-based, grid-based dungeon roguelike written in C++17. The
+**graphical Raylib build** is the canonical experience for grading and
+demos. A minimal **ASCII console build** is also provided as a
+smoke-test renderer behind the same `IRenderer` interface, mainly to
+prove that the renderer layer is loosely coupled — it lacks the
+graphical effects, audio, and Death Dungeon visual mode that define
+the full game.
 
 This README is the short overview. For full instructions see
 **[`USER_MANUAL.md`](USER_MANUAL.md)**; for archived design / requirements
@@ -13,8 +17,9 @@ notes see [`docs/archive/`](docs/archive/).
 ## Quick start (prebuilt Windows binaries)
 
 ```
-.\game.exe          (console / ASCII version)
-.\game_raylib.exe   (graphical version, recommended)
+.\game_raylib.exe   (graphical version — canonical experience)
+.\game.exe          (ASCII smoke-test renderer; gameplay only, no audio
+                     or visual effects)
 ```
 
 Both binaries sit in the project root. `game_raylib.exe` ships with
@@ -22,19 +27,12 @@ Both binaries sit in the project root. `game_raylib.exe` ships with
 
 ## Building from source
 
-C++17, no platform-specific code. The console build needs nothing beyond
-`g++`. The graphical build links against the vendored Raylib 5.5 in
-`libs/raylib/`.
+C++17, no platform-specific code in the game core. The graphical build
+links against the vendored Raylib 5.5 in `libs/raylib/`; the
+smoke-test ASCII build needs nothing beyond `g++`.
 
 ```bat
-:: Console build (no external deps)
-g++ -std=c++17 -Wall -Wextra -I src ^
-    src/main.cpp src/abilities/*.cpp src/combat/*.cpp src/core/*.cpp ^
-    src/entities/*.cpp src/io/*.cpp src/items/*.cpp ^
-    src/render/ConsoleRenderer.cpp src/systems/*.cpp src/world/*.cpp ^
-    -o game.exe
-
-:: Raylib (graphical) build
+:: Raylib (graphical) build — canonical
 g++ -std=c++17 -Wall -Wextra -DDGA_WITH_RAYLIB ^
     -I src -I libs/raylib/include ^
     src/main.cpp src/abilities/*.cpp src/combat/*.cpp src/core/*.cpp ^
@@ -43,6 +41,13 @@ g++ -std=c++17 -Wall -Wextra -DDGA_WITH_RAYLIB ^
     src/systems/*.cpp src/world/*.cpp ^
     -L libs/raylib/lib -lraylib -lopengl32 -lgdi32 -lwinmm ^
     -o game_raylib.exe
+
+:: ASCII console smoke-test build (no external deps)
+g++ -std=c++17 -Wall -Wextra -I src ^
+    src/main.cpp src/abilities/*.cpp src/combat/*.cpp src/core/*.cpp ^
+    src/entities/*.cpp src/io/*.cpp src/items/*.cpp ^
+    src/render/ConsoleRenderer.cpp src/systems/*.cpp src/world/*.cpp ^
+    -o game.exe
 
 :: Test runner (property-based suite)
 g++ -std=c++17 -Wall -Wextra -I src -I tests ^
@@ -89,16 +94,18 @@ README.md               this file
 * **Hand-rolled linked-list event log** (`EventLog`) feeding the HUD.
 * **File I/O**: tagged-text **transactional save / load** with full
   staging-then-commit semantics, plus a top-10 leaderboard.
-* **Renderer abstraction**: `IRenderer` interface with two concrete
-  implementations; the game core never knows which renderer is active.
+* **Renderer abstraction** (`IRenderer`): the canonical Raylib
+  graphical renderer plus a minimal ASCII console renderer used as a
+  smoke-test for the abstraction. The game core never knows which
+  renderer is active.
 * **Property-based tests**: 7 cases / 540 094 assertions covering grid
   template invariants, Bresenham symmetry, BFS shortest-path, map
   connectivity, and spawn placement.
 * **Dynamic difficulty**: per-wave HP scaling, distance-weighted enemy
   hit chance, dramatic "Death Dungeon" mode-shift after 9.5 s
-  (19 s on boss waves).
+  (19 s on boss waves) — Raylib build only.
 * **Procedural audio**: every SFX synthesised in memory at startup;
-  optional streaming OGG music tracks per wave type.
+  optional streaming OGG music tracks per wave type — Raylib build only.
 
 ## Tests
 

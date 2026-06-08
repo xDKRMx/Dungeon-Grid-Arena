@@ -1,9 +1,13 @@
 # Dungeon Grid Arena — User Manual
 
-A turn-based dungeon roguelike written in C++17 with two interchangeable
-renderers: a portable ASCII console renderer and an optional Raylib graphical
-renderer. This manual covers everything you need to install, run, play, save,
-load, and troubleshoot the game.
+A turn-based dungeon roguelike written in C++17. The **Raylib graphical
+build** is the canonical experience this manual is written for — it
+includes the full HUD, audio, music, and the Death Dungeon visual
+mode. A minimal **ASCII console build** is also provided as a
+smoke-test renderer behind the same `IRenderer` interface; it carries
+the gameplay logic (movement, combat, save / load, menus) but lacks
+all visual effects, audio, and the Death Dungeon mode-shift. Reach
+for the Raylib build for everyday use.
 
 ---
 
@@ -38,11 +42,11 @@ load, and troubleshoot the game.
 | CPU              | Any 64-bit x86 CPU that supports SSE2 (anything from the last 15 years).                                        |
 | Memory           | 200 MB free RAM is more than enough.                                                                            |
 | Disk             | 30 MB for the source tree + binaries; ~10 MB extra for the streaming OGG music tracks under `assets/`.          |
-| Display          | Any monitor capable of showing a 1280 × 760 window for the Raylib build. The console build runs in any 80 × 30 terminal. |
-| Audio            | Optional. The Raylib build runs silently if no audio device is present; the console build does not produce sound at all. |
-| Graphics driver  | Any OpenGL 3.3 compatible driver (Raylib build only). The console build needs no GPU. |
+| Display          | Any monitor capable of showing a 1280 × 760 window for the Raylib build. The smoke-test ASCII build runs in any 80 × 30 terminal. |
+| Audio            | Optional. The Raylib build runs silently if no audio device is present; the smoke-test ASCII build does not produce sound at all. |
+| Graphics driver  | Any OpenGL 3.3 compatible driver (Raylib build only). The smoke-test ASCII build needs no GPU. |
 | Compiler         | g++ 9 or newer / any C++17-conforming compiler if you want to rebuild from source.                              |
-| External libs    | **Raylib 5.5** (already vendored in `libs/raylib/` for the prebuilt Windows binary). The console build has no external dependencies. |
+| External libs    | **Raylib 5.5** (already vendored in `libs/raylib/` for the prebuilt Windows binary). The ASCII smoke-test build has no external dependencies. |
 
 ---
 
@@ -55,33 +59,27 @@ The release archive ships **two ready-to-run executables** and the full source.
 The repository root contains:
 
 ```
-game.exe          ← console (ASCII) build, no Raylib needed
-game_raylib.exe   ← graphical Raylib build, requires the bundled raylib.dll
+game_raylib.exe   ← graphical Raylib build (canonical experience)
 libs/raylib/lib/raylib.dll
 assets/normal_theme.ogg
 assets/boss_theme.ogg
-data/highscores.txt        ← created on first leaderboard write
+data/highscores.txt          ← created on first leaderboard write
+game.exe          ← optional ASCII smoke-test build (gameplay only)
 ```
 
-Just double-click either `.exe` and the game starts. `game_raylib.exe` finds
-`raylib.dll` and the OGG tracks automatically because they sit beside the
-binary; do **not** move them out of those folders.
+Just double-click `game_raylib.exe` and the game starts. It finds
+`raylib.dll` and the OGG tracks automatically because they sit beside
+the binary; do **not** move them out of those folders. The
+`game.exe` smoke-test binary is included for completeness — it
+exercises the same game core through the ASCII renderer to prove the
+`IRenderer` abstraction holds — but every screenshot, demo video,
+and gameplay walkthrough in this manual targets `game_raylib.exe`.
 
 ### 2.2  Build from source
 
 From the repository root, with `g++` on `PATH`:
 
-#### Console build (no external dependencies)
-
-```
-g++ -std=c++17 -Wall -Wextra -I src ^
-    src/main.cpp src/abilities/*.cpp src/combat/*.cpp src/core/*.cpp ^
-    src/entities/*.cpp src/io/*.cpp src/items/*.cpp ^
-    src/render/ConsoleRenderer.cpp src/systems/*.cpp src/world/*.cpp ^
-    -o game.exe
-```
-
-#### Raylib (graphical) build
+#### Raylib (graphical) build — canonical
 
 ```
 g++ -std=c++17 -Wall -Wextra -DDGA_WITH_RAYLIB ^
@@ -92,6 +90,16 @@ g++ -std=c++17 -Wall -Wextra -DDGA_WITH_RAYLIB ^
     src/systems/*.cpp src/world/*.cpp ^
     -L libs/raylib/lib -lraylib -lopengl32 -lgdi32 -lwinmm ^
     -o game_raylib.exe
+```
+
+#### ASCII smoke-test build (no external dependencies)
+
+```
+g++ -std=c++17 -Wall -Wextra -I src ^
+    src/main.cpp src/abilities/*.cpp src/combat/*.cpp src/core/*.cpp ^
+    src/entities/*.cpp src/io/*.cpp src/items/*.cpp ^
+    src/render/ConsoleRenderer.cpp src/systems/*.cpp src/world/*.cpp ^
+    -o game.exe
 ```
 
 Both commands are warning-clean: any warning is treated as a defect.
@@ -119,12 +127,15 @@ documentation.
 Open a terminal in the project root and run **one** of the binaries:
 
 ```
-.\game.exe          (console / ASCII version)
-.\game_raylib.exe   (graphical version, recommended)
+.\game_raylib.exe   (graphical version — canonical, all features)
+.\game.exe          (ASCII smoke-test — gameplay only, no audio /
+                     visual effects / Death Dungeon mode)
 ```
 
 The graphical version opens a 1280 × 760 window titled **Dungeon Grid Arena**.
-The console version takes over the current terminal window.
+The smoke-test ASCII version takes over the current terminal window. The
+remainder of this manual targets the Raylib build because the screenshots,
+HUD layout, and audio cues described below only exist there.
 
 To quit the game cleanly use the **Quit** option in the main menu (or press
 `Q` while a menu is active). On the Raylib build you can also click the
@@ -209,7 +220,9 @@ move.
 ## 6. Heads-Up Display (HUD)
 
 The Raylib build draws a HUD panel on the right side of the window. The
-console build prints a similar block of text under the map. Both show:
+ASCII smoke-test build prints a similar block of text under the map but
+without bars, colours, or the pulsing emphasis described below. Both
+show:
 
 | Line               | Meaning                                                                                                                         |
 | ------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
@@ -231,7 +244,7 @@ console build prints a similar block of text under the map. Both show:
 | `RECENT EVENTS`    | Rolling buffer of the latest event-log messages (combat outcomes, pickups, deaths, ability casts, save / load).                  |
 
 Below the map the Raylib build prints a four-line **controls reminder strip**
-listing every key. The console build prints the same reminder once per
+listing every key. The ASCII smoke-test build prints the same reminder once per
 turn.
 
 ---
@@ -495,7 +508,9 @@ The Raylib build plays:
   villain laugh. **No SFX files are shipped** — every sound is built at
   startup from sine / noise samples.
 
-The console build is silent.
+The ASCII smoke-test build is silent and does not draw any of these
+visual effects either — it exists to prove that the renderer
+abstraction holds, not as an alternative gameplay experience.
 
 If `assets/boss_theme.ogg` or `assets/normal_theme.ogg` is missing the
 Raylib build degrades gracefully: the corresponding wave plays only the
@@ -570,7 +585,7 @@ c++ final project/
 ├── USER_MANUAL.md            ← this file
 ├── Final_Project_Description.txt
 ├── CMakeLists.txt            ← optional CMake build
-├── game.exe                  ← prebuilt console binary
+├── game.exe                  ← prebuilt ASCII smoke-test binary (gameplay only)
 ├── game_raylib.exe           ← prebuilt graphical binary
 ├── assets/                   ← OGG music tracks streamed by the Raylib build
 │   ├── normal_theme.ogg

@@ -16,11 +16,19 @@ multi-file structure, inheritance and polymorphism, templates, hand-rolled
 linked lists) inside a single playable program rather than as isolated
 academic exercises.
 
-The codebase ships **two interchangeable renderers** sharing one game core:
+The codebase ships **two renderers behind a single `IRenderer`
+interface**, but they are not equal:
 
-* a portable ASCII **Console renderer** with no external dependencies, and
-* an optional **Raylib graphical renderer** with procedural sound synthesis,
-  streamed background music, and a full HUD.
+* the **Raylib graphical renderer** is the canonical experience —
+  full 1280 × 760 HUD, procedural sound effects, streamed OGG music,
+  the Death Dungeon visual mode shift, and every other showcase
+  feature; this is the build all screenshots and the demo video
+  target.
+* the **ASCII console renderer** is a deliberately minimal smoke-test
+  that runs the same game core through a terminal. Its purpose is to
+  prove that the renderer abstraction is loosely coupled — it carries
+  the gameplay logic (movement, combat, save / load, menus) but not
+  the audio, the visual effects, or the Death Dungeon mode.
 
 Both binaries are produced from the same C++17 source through a single compile
 flag (`-DDGA_WITH_RAYLIB`) which adds the Raylib renderer to the build. The
@@ -103,12 +111,12 @@ with four core methods (`drawFrame`, `pollInput`, `drawMenu`, `drawMessage`)
 plus a handful of optional hooks for transient effects (`showFireEffect`,
 `showNovaEffect`, …) and audio (`showPickupSound`, `setBossMusicActive`,
 `setMasterMusicVolume`, …). Every effect / audio hook has a default no-op
-body so the console renderer compiles unchanged.
+body so the ASCII smoke-test renderer compiles unchanged.
 
 The concrete `RaylibRenderer.cpp` is the only translation unit in the entire
 project that includes `raylib.h`. This means the rest of the codebase can be
-compiled into the test runner — and the console build — without Raylib
-installed at all.
+compiled into the test runner — and the ASCII smoke-test build — without
+Raylib installed at all.
 
 ### 3.3  No globals, single-source-of-truth
 
@@ -394,8 +402,8 @@ In preparation for the defence I went over every layer of the codebase:
   required tag has a `found*` flag — and why `GOLD` is the one optional
   field for backwards compatibility.
 * I can explain why `IRenderer` has a default no-op for every audio /
-  effect hook (so the console build inherits a working stub without
-  having to override).
+  effect hook (so the ASCII smoke-test build inherits a working stub
+  without having to override).
 * I can demonstrate the running test suite and read its property
   invariants out of the source.
 
