@@ -42,6 +42,12 @@ void Inventory::remove(Item* item) {
         contents_.end());
 }
 
+// Drop every reference at once. The Item objects themselves stay alive — only
+// the pointers in our vector go away — which matches the non-owning contract.
+void Inventory::clear() {
+    contents_.clear();
+}
+
 // Read-only view of the held items for the HUD (R20.2). Returning a const
 // reference avoids copying the vector while preventing outside mutation.
 const std::vector<Item*>& Inventory::contents() const {

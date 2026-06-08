@@ -60,6 +60,16 @@ public:
     /// @param startPosition the grid cell the hero begins on.
     Player(const Config& config, const Vec2& startPosition);
 
+    /// Reset every Player field back to the starting values defined by Config,
+    /// as if the Player had just been constructed at `startPosition`. Used by
+    /// GameState::reset when a brand-new run begins so the existing Player
+    /// instance can be re-used in place — no destruction, no placement-new,
+    /// no copy. All shop-buff counters, abilities, inventory, charge meter,
+    /// shield, fire cooldown and equipped weapon are cleared.
+    /// @param config        same config the constructor reads.
+    /// @param startPosition the cell the freshly-reset hero should occupy.
+    void reset(const Config& config, const Vec2& startPosition);
+
     // ---- Ammo (ranged weapons, OD-3) --------------------------------------
 
     /// @return the hero's current ammunition count.

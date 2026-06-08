@@ -42,6 +42,40 @@ Player::Player(const Config& config, const Vec2& startPosition)
       inventory_(),
       abilities_() {}
 
+// Reset every field back to its constructor-time value. Used by
+// GameState::reset (which is in turn called from Game::resetRun) so a new
+// run can re-use the existing Player object without rebuilding it. Mirrors
+// the constructor's initialiser list one field at a time so adding a new
+// member to Player must update both places (constructor + reset).
+void Player::reset(const Config& config, const Vec2& startPosition) {
+    // Entity-inherited state (protected fields, accessible from Player).
+    position_  = startPosition;
+    health_    = config.playerStartingHealth();
+    maxHealth_ = config.playerMaxHealth();
+    attack_    = config.playerStartingAttack();
+    armor_     = config.playerStartingArmor();
+
+    // Player-specific resource counters.
+    ammo_                       = config.playerStartingAmmo();
+    fireRange_                  = config.playerBaseFireRange();
+    chargeMeter_                = 0;
+    shieldRemainingTurns_       = 0;
+    fireCooldown_               = 0;
+    fireCooldownDuration_       = config.playerFireCooldown();
+    wallPierceShotsRemaining_   = 0;
+    doubleMoveTurnsRemaining_   = 0;
+    blinkChainUsesRemaining_    = 0;
+    twinStrikeChargesRemaining_ = 0;
+
+    // Drop the equipped weapon pointer (the GameState owns the Weapon; we
+    // just stop pointing at it).
+    equippedWeapon_ = nullptr;
+
+    // Forget every held item and every owned ability.
+    inventory_.clear();
+    abilities_.clear();
+}
+
 // ---- Ammo -------------------------------------------------------------------
 
 int Player::ammo() const {

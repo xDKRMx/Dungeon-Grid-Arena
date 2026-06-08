@@ -109,6 +109,12 @@ public:
     /// @return the configured display capacity (R6.2).
     int capacity() const;
 
+    /// Drop every stored message and free every node. After this call size()
+    /// is 0 and head_ / tail_ are both nullptr. Used by Game::resetRun when a
+    /// fresh run starts so the new wave's events are not mixed with the
+    /// previous run's history.
+    void clear();
+
 private:
     /// Remove the head node and free its memory (used by append when evicting).
     /// Calling this on an empty list is a no-op guarded by the size check in

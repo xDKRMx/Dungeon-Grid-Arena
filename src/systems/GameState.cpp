@@ -55,6 +55,34 @@ GameState::GameState(const Config& config, unsigned int seed)
 // definition in this .cpp is what makes owning a forward-declared Enemy legal.
 GameState::~GameState() = default;
 
+// Restore the GameState to its starting configuration in place. Mirrors what
+// the constructor does field-by-field but operates on the already-constructed
+// `*this`, so Game::resetRun no longer needs the placement-new dance to start
+// a fresh run. The Config is the same one the constructor reads; `seed` is
+// the new RNG seed for the upcoming run (R26.4).
+void GameState::reset(const Config& config, unsigned int seed) {
+    // Rebuild the dungeon grid (GridMap is value-type and assignable).
+    map_ = GridMap(config.gridWidth(), config.gridHeight());
+
+    // Reset the hero to its starting stats. The Player object stays alive;
+    // only its fields are restored.
+    player_.reset(config, Vec2(0, 0));
+
+    // Drop everything from the previous run.
+    enemies_.clear();
+    items_.clear();
+
+    // Reset every run counter to its starting value.
+    waveNumber_    = 1;
+    score_         = 0;
+    gold_          = 0;
+    turnCount_     = 0;
+    enemiesKilled_ = 0;
+
+    // Reseed the random source so a new seed produces a new run.
+    rng_.reseed(seed);
+}
+
 // ---- Map -------------------------------------------------------------------
 
 const GridMap& GameState::map() const {

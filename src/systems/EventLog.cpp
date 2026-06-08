@@ -120,6 +120,22 @@ int EventLog::capacity() const {
     return capacity_;
 }
 
+// Drop every stored message in one shot. Walks the linked list head-to-tail
+// and frees each node, then zeroes head_, tail_ and size_ so the EventLog is
+// in the same state a freshly-constructed instance would have. The capacity
+// stays untouched.
+void EventLog::clear() {
+    Node* current = head_;
+    while (current != nullptr) {
+        Node* next = current->next;
+        delete current;
+        current = next;
+    }
+    head_ = nullptr;
+    tail_ = nullptr;
+    size_ = 0;
+}
+
 // ---- Private helpers -------------------------------------------------------
 
 // Remove the head node, free its memory, and update head_/size_.

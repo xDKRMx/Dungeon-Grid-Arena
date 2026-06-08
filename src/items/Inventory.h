@@ -55,6 +55,13 @@ public:
     ///        reference is dropped (R20.3). Absent or null pointers are no-ops.
     void remove(Item* item);
 
+    /// Drop every item reference at once.
+    /// Used by Player::reset (and by the load path) to put the inventory back
+    /// into its empty starting state. The pointed-to Items are NOT deleted —
+    /// only the references are dropped, matching the rest of this class's
+    /// non-owning contract.
+    void clear();
+
     /// Expose the current contents for display in the HUD (R20.2).
     /// @return a const reference to the internal vector of item pointers. The
     ///         reference is read-only so callers can iterate the held items but

@@ -74,6 +74,18 @@ public:
     /// Enemy by unique_ptr legal here (see the file header).
     ~GameState();
 
+    /// Reset the run state back to its starting configuration without
+    /// destroying or re-constructing the GameState object itself. Rebuilds
+    /// the dungeon map from Config, clears every enemy / item, calls
+    /// `Player::reset` to restore the hero, zeroes every counter, and reseeds
+    /// the run's random source from `seed`. Used by Game::resetRun when the
+    /// player picks "New Game" so the existing GameState instance is re-used
+    /// in place.
+    /// @param config the balancing configuration to read fresh starting
+    ///        values from.
+    /// @param seed   the new run's RNG seed (R26.4).
+    void reset(const Config& config, unsigned int seed);
+
     // ---- Map -------------------------------------------------------------
 
     /// @return a read-only reference to the dungeon map (for renderers/tests).
