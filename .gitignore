@@ -33,11 +33,12 @@ game.exe
 game_raylib.exe
 test_runner.exe
 
-# ---- Vendored Raylib runtime DLL (the .a + headers are tracked) -------------
-# raylib.dll is a 64-bit Windows binary; the test runner does not need it
-# and reviewers can fetch it from the upstream Raylib release. Re-add this
-# file by hand when packaging the submission ZIP if needed.
-libs/raylib/lib/raylib.dll
+# ---- Vendored Raylib (the .a + headers + DLL are tracked so fresh
+#       GitHub clones can build and run game_raylib.exe without any
+#       package-manager step) -----------------------------------------------
+!libs/raylib/lib/libraylib.a
+!libs/raylib/lib/libraylibdll.a
+!libs/raylib/lib/raylib.dll
 
 # ---- CMake build trees ------------------------------------------------------
 build/

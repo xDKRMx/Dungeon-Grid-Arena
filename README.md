@@ -8,21 +8,23 @@ prove that the renderer layer is loosely coupled — it lacks the
 graphical effects, audio, and Death Dungeon visual mode that define
 the full game.
 
-This README is the short overview. For full instructions see
-**[`USER_MANUAL.md`](USER_MANUAL.md)**.
+This README is the short overview. For full instructions see the
+**[`USER_MANUAL.pdf`](USER_MANUAL.pdf)**.
 
 ---
 
-## Quick start (prebuilt Windows binaries)
+## Quick start (prebuilt Windows binary)
 
 ```
 .\game_raylib.exe   (graphical version — canonical experience)
-.\game.exe          (ASCII smoke-test renderer; gameplay only, no audio
-                     or visual effects)
 ```
 
-Both binaries sit in the project root. `game_raylib.exe` ships with
-`libs/raylib/lib/raylib.dll` and the OGG music tracks under `assets/`.
+The prebuilt binary sits in the project root. `game_raylib.exe` ships
+with `libs/raylib/lib/raylib.dll` and the OGG music tracks under
+`assets/`. The minimal ASCII smoke-test build is not shipped as a
+prebuilt; if you want to verify that the `IRenderer` abstraction
+holds you can compile it from source with the second `g++` command
+under [Building from source](#building-from-source).
 
 ## Cloning the repository
 
@@ -121,20 +123,19 @@ a real defect and must be fixed before merging.
 ## Repository layout
 
 ```
-src/                    layered C++17 source (core < world < entities <
-                        items < combat < abilities < systems < io < render)
-tests/                  property-based unit-test suite (doctest)
-test_cases_evidence/    manual gameplay test screenshots, demo video,
-                        and MANUAL_TEST_CASES.md
-libs/raylib/            vendored Raylib 5.5 (Windows MinGW prebuilt)
-assets/                 streamed OGG music for the Raylib build
-data/                   runtime files (highscores, save slot)
-docs/                   tasks.md (the per-task implementation log).
-USER_MANUAL.md          end-user documentation
-PROJECT_FINAL_REPORT.md reference Final Report (Proposal + Requirements
-                        + Design)
-SUMMARY_REPORT.md       reference Summary Report
-README.md               this file
+src/                     layered C++17 source (core < world < entities <
+                         items < combat < abilities < systems < io < render)
+tests/                   property-based unit-test suite (doctest)
+test_cases_evidence/     manual gameplay test screenshots and demo video
+libs/raylib/             vendored Raylib 5.5 (Windows MinGW prebuilt)
+assets/                  streamed OGG music for the Raylib build
+data/                    runtime files (highscores, save slot)
+USER_MANUAL.pdf          end-user installation, controls, gameplay
+PROJECT_FINAL_REPORT.pdf Final Report (Proposal + Requirements + Design)
+SUMMARY_REPORT.pdf       Summary Report
+MANUAL_TEST_CASES.md     manual test-case catalogue (25 cases) keyed
+                         to the screenshots in test_cases_evidence/
+README.md                this file
 ```
 
 ## Highlights
