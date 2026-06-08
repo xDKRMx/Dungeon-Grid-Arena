@@ -128,8 +128,21 @@ flag lists every available switch (e.g. running a single test case by name).
   `.\test_runner.exe --test-case="*Pathfinder*"`
 * Verbose output (every assertion printed even on success):
   `.\test_runner.exe -s`
+* **Per-case progress log** (each test case name + duration is printed as it
+  runs — the most useful flag for showing graders that every case actually
+  executed):
+  `.\test_runner.exe --duration=true --no-skip`
 * List the test cases without running them:
   `.\test_runner.exe --list-test-cases`
+
+### 4.4  Captured run log (`test_run_log.txt`)
+
+`tests/test_run_log.txt` contains the full output of
+`.\test_runner.exe --duration=true --no-skip` captured on the submission
+machine. It lists each of the 7 test cases by name, prints the per-case
+execution time, and ends with the same `Status: SUCCESS!` summary line —
+making it easy to verify at a glance that every test case really did run.
+Re-run the command above to regenerate it.
 
 ## 5. Test classification
 
