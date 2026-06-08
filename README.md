@@ -24,11 +24,41 @@ This README is the short overview. For full instructions see
 Both binaries sit in the project root. `game_raylib.exe` ships with
 `libs/raylib/lib/raylib.dll` and the OGG music tracks under `assets/`.
 
+## Cloning the repository
+
+```bat
+git clone https://github.com/xDKRMx/Dungeon-Grid-Arena.git
+cd Dungeon-Grid-Arena
+```
+
+Everything needed to build is already inside the clone. **You do not
+need to install Raylib separately** — the library headers and the
+prebuilt MinGW-w64 binaries (`libraylib.a`, `libraylibdll.a`,
+`raylib.dll`) are vendored under [`libs/raylib/`](libs/raylib/) so
+the project compiles and runs on a fresh Windows machine without any
+package manager step.
+
+## Prerequisites
+
+You only need a C++17 compiler. The reference toolchain on the
+submission machine is:
+
+| Tool                  | Tested version | Notes                                        |
+| --------------------- | -------------- | -------------------------------------------- |
+| `g++` (MinGW-w64)     | 13.2.0         | Anything 11+ with C++17 will compile cleanly.|
+| `cmake` *(optional)*  | 3.15+          | Only if you prefer the CMake build path.     |
+
+No additional libraries to install. Raylib (graphical build),
+doctest 2.4.11 (test runner), and the OGG music are all vendored
+inside this repository.
+
 ## Building from source
 
 C++17, no platform-specific code in the game core. The graphical build
 links against the vendored Raylib 5.5 in `libs/raylib/`; the
 smoke-test ASCII build needs nothing beyond `g++`.
+
+### Path A — `g++` shell commands (the path I used day-to-day)
 
 ```bat
 :: Raylib (graphical) build — canonical
@@ -59,10 +89,34 @@ g++ -std=c++17 -Wall -Wextra -I src -I tests ^
     -o test_runner.exe
 ```
 
-All three commands are warning-clean: any compiler warning is treated as a
-real defect and must be fixed before merging.
+After `game_raylib.exe` is built, copy the vendored DLL next to it so
+Windows can find it at runtime:
 
-A `CMakeLists.txt` is also provided as an alternative build path.
+```bat
+copy libs\raylib\lib\raylib.dll .\
+```
+
+### Path B — CMake (portable / IDE-friendly alternative)
+
+A `CMakeLists.txt` is also provided. Set `BUILD_WITH_RAYLIB=ON` to
+enable the graphical build; leave it OFF (the default) for the ASCII
+smoke-test build.
+
+```bat
+:: Graphical build
+cmake -S . -B build -DBUILD_WITH_RAYLIB=ON
+cmake --build build --config Release
+
+:: ASCII smoke-test build (no external deps)
+cmake -S . -B build_ascii
+cmake --build build_ascii --config Release
+
+:: Run the test suite via CTest
+ctest --test-dir build --output-on-failure
+```
+
+Both build paths are warning-clean: any compiler warning is treated as
+a real defect and must be fixed before merging.
 
 ## Repository layout
 
