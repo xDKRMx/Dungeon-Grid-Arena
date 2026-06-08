@@ -85,7 +85,7 @@ milestones:
 | Date       | Milestone                                                                             |
 | ---------- | ------------------------------------------------------------------------------------- |
 | May 7      | Project proposal submitted: topic, target rubric items, deliverable list.             |
-| May 8 – 15 | Requirements analysis and design specification (the documents under `docs/archive/`).  |
+| May 8 – 15 | Requirements analysis and design specification.                                        |
 | May 16 – 28 | Core layers implemented: `core`, `world`, `entities`, `combat`. Test suite stood up.   |
 | May 29 – Jun 4 | Systems layer: turn manager, abilities, waves, save / load, ASCII smoke-test renderer.       |
 | Jun 5 – 7  | Raylib renderer, audio synthesis, gameplay polish, single-panel wave-clear menu.      |
@@ -128,11 +128,11 @@ a real running program rather than as fragmentary code samples.
 
 ## 2.2  Functional requirements
 
-The full requirements catalogue lives in
-`docs/archive/requirements_internal_spec.md` (32 KB, written in EARS
-format — *"WHEN <event>, THE SYSTEM SHALL <action>"*). The summary below
-enumerates the 30 requirement groups. Each group expands into 3 – 8
-verifiable sub-clauses.
+The catalogue below enumerates the 30 requirement groups that drove the
+implementation. Each group is written in the EARS shape
+*"WHEN <event>, THE SYSTEM SHALL <action>"* and expands into 3 – 8
+verifiable sub-clauses; the table presents one representative summary per
+group for readability.
 
 | ID    | Requirement summary                                                                          |
 | ----- | -------------------------------------------------------------------------------------------- |

@@ -9,8 +9,7 @@ graphical effects, audio, and Death Dungeon visual mode that define
 the full game.
 
 This README is the short overview. For full instructions see
-**[`USER_MANUAL.md`](USER_MANUAL.md)**; for archived design / requirements
-notes see [`docs/archive/`](docs/archive/).
+**[`USER_MANUAL.md`](USER_MANUAL.md)**.
 
 ---
 
@@ -76,8 +75,7 @@ test_cases_evidence/    manual gameplay test screenshots, demo video,
 libs/raylib/            vendored Raylib 5.5 (Windows MinGW prebuilt)
 assets/                 streamed OGG music for the Raylib build
 data/                   runtime files (highscores, save slot)
-docs/                   tasks.md and an archive/ subfolder with the
-                        original specs and report outlines
+docs/                   tasks.md (the per-task implementation log).
 USER_MANUAL.md          end-user documentation
 PROJECT_FINAL_REPORT.md reference Final Report (Proposal + Requirements
                         + Design)
